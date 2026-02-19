@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,29 +26,36 @@ app.MapGet("/", () =>
     return "Api is working!";
 });
 //read categories
-app.MapGet("/api/categories", () =>
+app.MapGet("/api/categories", ([FromQuery] string? searchValue=" ") =>
 {
+    if(!string.IsNullOrEmpty(searchValue)){
+        var filteredCategories = categories.Where(c=> c.CategoryName != null && c.CategoryName.Contains(searchValue, StringComparison.OrdinalIgnoreCase)).ToList();
+        return Results.Ok(filteredCategories);
+    }
     
     return Results.Ok(categories);
 });
 
-app.MapPost("/api/categories", () =>
+app.MapPost("/api/categories", ([FromBody] Category category) =>
 {
+    if(string.IsNullOrEmpty(category.CategoryName)){
+        return Results.BadRequest("Category name is required");
+    }
 
-    var category = new Category
+    var newcat = new Category
     {
         CategoryId = Guid.NewGuid(),
-        CategoryName = "Electronics",
-        Description = "Devices and gadgets",
+        CategoryName = category.CategoryName,
+        Description = category.Description,
         CreatedAt = DateTime.UtcNow
     };
-    categories.Add(category);
-    return Results.Created($"/api/categories/{category.CategoryId}", category);
+    categories.Add(newcat);
+    return Results.Created($"/api/categories/{newcat.CategoryId}", newcat);
 });
 
-app.MapDelete("/api/categories", () =>
+app.MapDelete("/api/categories/{categoryId:guid}", (Guid categoryId) =>
 {
-    var removeCateory = categories.FirstOrDefault(c => c.CategoryId == Guid.Parse("60dac264-5c74-4b22-b002-81ae92fb659f"));  
+    var removeCateory = categories.FirstOrDefault(c => c.CategoryId == categoryId);  
     if (removeCateory != null)
     {
         categories.Remove(removeCateory);
@@ -55,15 +64,24 @@ app.MapDelete("/api/categories", () =>
     return Results.NotFound("Category not found");
 });
 // error found in the put method, it is not working, i will check it later and update it.
-app.MapPut("/api/categories",()=>{
+app.MapPut("/api/categories/{categoryId}",(Guid categoryId,[FromBody] Category updatedCategory)=>{
 
-    var foundCategory = categories.FirstOrDefault(c=>c.CategoryId == Guid.Parse("60dac264-5c74-4b22-b002-81ae92fb659f"));
+    var foundCategory = categories.FirstOrDefault(c=>c.CategoryId == categoryId);
     if (foundCategory == null){
         return Results.NotFound("Category not found");
     
     }
-    foundCategory.CategoryName = "Updated Electronics";
-    foundCategory.Description = "Updated description for devices and gadgets";
+    if (updatedCategory == null)
+    {
+        return Results.BadRequest("Updated category data is required");
+    }
+    if(!string.IsNullOrEmpty(updatedCategory.CategoryName)){
+        foundCategory.CategoryName = updatedCategory.CategoryName;
+    }
+    if(!string.IsNullOrEmpty(updatedCategory.Description)){
+        foundCategory.Description = updatedCategory.Description;
+    }
+    ;
     return Results.NoContent();
 });
 //
@@ -78,7 +96,7 @@ public record Category
     public Guid CategoryId { get; set; }
     public string? CategoryName { get; set; }
 
-    public string? Description { get; set; }
+    public string? Description { get; set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }
 }; 
