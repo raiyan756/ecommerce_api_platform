@@ -6,19 +6,28 @@ public class CategoryControllers:ControllerBase
 {
     private static List<Category> categories = new List<Category>(); 
     [HttpGet]
-    public IActionResult GetCategories([FromQuery] string searchValue)
+    public IActionResult GetCategories([FromQuery] string searchValue = " ")
     {
-          if(!string.IsNullOrEmpty(searchValue)){
+        /*
+        if(!string.IsNullOrEmpty(searchValue)){
         var filteredCategories = categories.Where(c=> c.CategoryName != null && c.CategoryName.Contains(searchValue, StringComparison.OrdinalIgnoreCase)).ToList();
-        return Ok(filteredCategories);
+       return Ok(filteredCategories);
     }
+    */
+
+       var newCategories =  categories.Select(c => new ReadCategoryDtos
+        {
+            CategoryId = c.CategoryId,
+            CategoryName = c.CategoryName,
+            Description = c.Description,
+            CreatedAt = c.CreatedAt
+              }).ToList();
     
-    return Ok(categories);
-        
+        return Ok(newCategories);
     }
 
     [HttpPut("{categoryId}")]
-    public IActionResult UpdateCategories(Guid categoryId,[FromBody] Category updatedCategory)
+    public IActionResult UpdateCategories(Guid categoryId,[FromBody] UpdateCategoryDtos updatedCategory)
     {
         var foundCategory = categories.FirstOrDefault(c=>c.CategoryId == categoryId);
     if (foundCategory == null){
@@ -52,7 +61,7 @@ public class CategoryControllers:ControllerBase
     }
 
     [HttpPost]
-    public IActionResult InsertCategory([FromBody] Category category)
+    public IActionResult InsertCategory([FromBody] CreateCategoryDtos category)
     {
         if(string.IsNullOrEmpty(category.CategoryName)){
         return BadRequest("Category name is required");
@@ -61,7 +70,6 @@ public class CategoryControllers:ControllerBase
         {
             return BadRequest("Description is Required");
         }
-
     var newcat = new Category
     {
         CategoryId = Guid.NewGuid(),
@@ -70,7 +78,15 @@ public class CategoryControllers:ControllerBase
         CreatedAt = DateTime.UtcNow
     };
     categories.Add(newcat);
-    return Created($"/api/categories/{newcat.CategoryId}", newcat);
+    var newReadCategoryDtos  = new ReadCategoryDtos
+    {
+        CategoryId = newcat.CategoryId,
+        CategoryName = newcat.CategoryName,
+        Description = newcat.Description,
+        CreatedAt = newcat.CreatedAt,
+    };
+    
+    return Created($"/api/categories/{newcat.CategoryId}", newReadCategoryDtos);
     }
 
     
