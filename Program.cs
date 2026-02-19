@@ -54,24 +54,25 @@ app.MapDelete("/api/categories", () =>
     }
     return Results.NotFound("Category not found");
 });
+// error found in the put method, it is not working, i will check it later and update it.
+app.MapPut("/api/categories",()=>{
 
-app.MapPut("/api/categories/{id}", (Guid id, Category updatedCategory) =>
-{
-    var category = categories.FirstOrDefault(c => c.CategoryId == id);
-    if (category == null)
-    {
+    var foundCategory = categories.FirstOrDefault(c=>c.CategoryId == Guid.Parse("60dac264-5c74-4b22-b002-81ae92fb659f"));
+    if (foundCategory == null){
         return Results.NotFound("Category not found");
+    
     }
-    category.CategoryName = updatedCategory.CategoryName;
-    category.Description = updatedCategory.Description;
-    return Results.Ok(category);
+    foundCategory.CategoryName = "Updated Electronics";
+    foundCategory.Description = "Updated description for devices and gadgets";
+    return Results.NoContent();
 });
+//
 
 app.Run();
 
 //dto is the template for the product.
 
-public class Category
+public record Category
 {
     
     public Guid CategoryId { get; set; }
