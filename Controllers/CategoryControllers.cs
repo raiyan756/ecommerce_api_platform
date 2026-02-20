@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("/api/categories")]
@@ -63,13 +64,7 @@ public class CategoryControllers:ControllerBase
     [HttpPost]
     public IActionResult InsertCategory([FromBody] CreateCategoryDtos category)
     {
-        if(string.IsNullOrEmpty(category.CategoryName)){
-        return BadRequest("Category name is required");
-    }
-        if (string.IsNullOrEmpty(category.Description))
-        {
-            return BadRequest("Description is Required");
-        }
+       
     var newcat = new Category
     {
         CategoryId = Guid.NewGuid(),
