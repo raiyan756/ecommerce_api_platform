@@ -9,19 +9,9 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     {
         var error = context.ModelState
         .Where(e=>e.Value!=null && e.Value.Errors.Count>0)
-        .Select(e => new
-        {
-            Field = e.Key,
-            error =e.Value != null ? e.Value.Errors.Select(x=>x.ErrorMessage):new string[0].ToArray()
-            
-        }).ToList();
+        .SelectMany(e => e.Value.Errors.Select(x =>x.ErrorMessage)).ToList();
 
-        return new BadRequestObjectResult(new
-        {
-            message = "Validation Error",
-            Errors = error
-        });
-        
+        return new BadRequestObjectResult(ApiResponses<object>.ErrorResponse(error,400,"Validation error"));
     };
     
 });

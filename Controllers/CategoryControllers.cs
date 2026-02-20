@@ -24,7 +24,7 @@ public class CategoryControllers:ControllerBase
             CreatedAt = c.CreatedAt
               }).ToList();
     
-        return Ok(newCategories);
+        return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
     }
 
     [HttpPut("{categoryId}")]
@@ -45,7 +45,7 @@ public class CategoryControllers:ControllerBase
     if(!string.IsNullOrEmpty(updatedCategory.Description)){
         foundCategory.Description = updatedCategory.Description;
     }
-    return NoContent();
+    return Ok(ApiResponses<Object>.SuccessResponse(null,204,"category updated successfully"));
     
     }
 
@@ -56,7 +56,7 @@ public class CategoryControllers:ControllerBase
     if (removeCateory != null)
     {
         categories.Remove(removeCateory);
-        return Ok("Category removed");
+        return Ok(ApiResponses<Object>.SuccessResponse(null,204,"category Deleted successfully"));;
     }
     return NotFound("Category not found");
     }
@@ -81,7 +81,8 @@ public class CategoryControllers:ControllerBase
         CreatedAt = newcat.CreatedAt,
     };
     
-    return Created($"/api/categories/{newcat.CategoryId}", newReadCategoryDtos);
+    return Created($"/api/categories/{newcat.CategoryId}",
+    ApiResponses<ReadCategoryDtos>.SuccessResponse(newReadCategoryDtos,201,"category created successfully"));
     }
 
     
