@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 public class CategoryControllers:ControllerBase
 {
 
-    private CategoryServices _categoryServices;
-    public CategoryControllers(CategoryServices categoryServices)
+    private ICategoryServices _categoryServices;
+    public CategoryControllers(ICategoryServices categoryServices)
     {
         _categoryServices = categoryServices;
         

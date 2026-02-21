@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-public class CategoryServices
+public class CategoryServices : ICategoryServices
 {
      private static readonly List<Category> categories = new List<Category>();
 
