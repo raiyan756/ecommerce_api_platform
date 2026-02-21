@@ -2,20 +2,25 @@ using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 public class CategoryServices : ICategoryServices
 {
-     private static readonly List<Category> categories = new List<Category>();
+    // private static readonly List<Category> categories = new List<Category>();
      private IMapper _imaper;
+     private readonly AppDbContext _appDbContext;
 
-     public CategoryServices(IMapper impaer)
+     public CategoryServices(AppDbContext appDbContext,IMapper impaer)
     {
         _imaper = impaer;
+        _appDbContext = appDbContext;
     }
 
 //Get all the categories
-     public List<ReadCategoryDtos> GetAllCategories()
+     public async Task<List<ReadCategoryDtos>> GetAllCategories()
     {
+        var categories = await _appDbContext.categories.ToListAsync();  
+
        return _imaper.Map<List<ReadCategoryDtos>>(categories);
      }
 

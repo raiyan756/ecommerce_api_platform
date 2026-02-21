@@ -1,10 +1,10 @@
 public interface ICategoryServices
 {
-     List<ReadCategoryDtos> GetAllCategories();
-     ReadCategoryDtos CreateCategory (CreateCategoryDtos createCategoryDtos);
-     ReadCategoryDtos? GetCategoryById (Guid categoryId);
+     Task< List<ReadCategoryDtos>> GetAllCategories();
+     Task<ReadCategoryDtos> CreateCategory (CreateCategoryDtos createCategoryDtos);
+    Task<ReadCategoryDtos?>  GetCategoryById (Guid categoryId);
 
-     ReadCategoryDtos? UpdateCategoryById (Guid CategoryId,UpdateCategoryDtos updateCategoryDtos);
-     bool DeleteCategory(Guid CategoryId);
+    Task<ReadCategoryDtos?>  UpdateCategoryById (Guid CategoryId,UpdateCategoryDtos updateCategoryDtos);
+     Task<bool> DeleteCategory  (Guid CategoryId);
 
 }
