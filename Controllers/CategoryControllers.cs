@@ -1,4 +1,5 @@
 using System.ComponentModel.Design;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("/api/categories")]
@@ -7,6 +8,9 @@ public class CategoryControllers:ControllerBase
 {
 
     private ICategoryServices _categoryServices;
+
+    
+   
     public CategoryControllers(ICategoryServices categoryServices)
     {
         _categoryServices = categoryServices;
@@ -22,26 +26,14 @@ public class CategoryControllers:ControllerBase
        return Ok(filteredCategories);
     }
     */
-
-
-    var newCategories = _categoryServices.GetAllCategories();
-
-       
-    
-        return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
+       var newCategories = _categoryServices.GetAllCategories();
+       return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
     }
     //get category by id
     [HttpGet("{categoryId:guid}")]
     public IActionResult GetCategoryById(Guid categoryId)
     {
-        /*
-        if(!string.IsNullOrEmpty(searchValue)){
-        var filteredCategories = categories.Where(c=> c.CategoryName != null && c.CategoryName.Contains(searchValue, StringComparison.OrdinalIgnoreCase)).ToList();
-       return Ok(filteredCategories);
-    }
-    */
-
-        var foundCategory = _categoryServices.GetCategoryById(categoryId);
+      var foundCategory = _categoryServices.GetCategoryById(categoryId);
 
         if (foundCategory == null)
         {
