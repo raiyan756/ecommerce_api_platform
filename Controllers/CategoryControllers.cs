@@ -5,9 +5,16 @@ using Microsoft.AspNetCore.Mvc;
 
 public class CategoryControllers:ControllerBase
 {
-    private static List<Category> categories = new List<Category>(); 
+
+    private CategoryServices _categoryServices;
+    public CategoryControllers(CategoryServices categoryServices)
+    {
+        _categoryServices = categoryServices;
+        
+    }
+    
     [HttpGet]
-    public IActionResult GetCategories([FromQuery] string searchValue = " ")
+    public IActionResult GetCategories()
     {
         /*
         if(!string.IsNullOrEmpty(searchValue)){
@@ -16,72 +23,69 @@ public class CategoryControllers:ControllerBase
     }
     */
 
-       var newCategories =  categories.Select(c => new ReadCategoryDtos
-        {
-            CategoryId = c.CategoryId,
-            CategoryName = c.CategoryName,
-            Description = c.Description,
-            CreatedAt = c.CreatedAt
-              }).ToList();
+
+    var newCategories = _categoryServices.GetAllCategories();
+
+       
     
         return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
     }
+    //get category by id
+    [HttpGet("{categoryId:guid}")]
+    public IActionResult GetCategoryById(Guid categoryId)
+    {
+        /*
+        if(!string.IsNullOrEmpty(searchValue)){
+        var filteredCategories = categories.Where(c=> c.CategoryName != null && c.CategoryName.Contains(searchValue, StringComparison.OrdinalIgnoreCase)).ToList();
+       return Ok(filteredCategories);
+    }
+    */
 
-    [HttpPut("{categoryId}")]
+        var foundCategory = _categoryServices.GetCategoryById(categoryId);
+
+        if (foundCategory == null)
+        {
+            return NotFound (ApiResponses<object>.ErrorResponse(new List<string> {"Category with ID does not found"}, 404 , "Invalid request" ));
+        }
+    
+        return Ok (ApiResponses<ReadCategoryDtos>.SuccessResponse(foundCategory,200,"category returned successfully"));
+    }
+
+    [HttpPut("{categoryId:guid}")]
     public IActionResult UpdateCategories(Guid categoryId,[FromBody] UpdateCategoryDtos updatedCategory)
     {
-        var foundCategory = categories.FirstOrDefault(c=>c.CategoryId == categoryId);
-    if (foundCategory == null){
-        return NotFound("Category not found");
-    
-    }
-    if (updatedCategory == null)
-    {
-        return BadRequest("Updated category data is required");
-    }
-    if(!string.IsNullOrEmpty(updatedCategory.CategoryName)){
-        foundCategory.CategoryName = updatedCategory.CategoryName;
-    }
-    if(!string.IsNullOrEmpty(updatedCategory.Description)){
-        foundCategory.Description = updatedCategory.Description;
-    }
-    return Ok(ApiResponses<Object>.SuccessResponse(null,204,"category updated successfully"));
+        var foundCategory =_categoryServices.UpdateCategoryById(categoryId,updatedCategory);
+
+        if (foundCategory == null)
+        {
+            return NotFound(ApiResponses<object>.ErrorResponse(new List<string>{"not found"},404,"Update is not successfull"));
+        }
+        else
+        {
+                   return Ok(ApiResponses<ReadCategoryDtos>.SuccessResponse(foundCategory,204,"category updated successfully"));
+
+        }
     
     }
 
-    [HttpDelete("{categoryId}")]
+    [HttpDelete("{categoryId:guid}")]
     public IActionResult DeleteCategories(Guid categoryId)
     {
-    var removeCateory = categories.FirstOrDefault(c => c.CategoryId == categoryId);  
-    if (removeCateory != null)
+       var removeCateory = _categoryServices.DeleteCategory(categoryId);
+   
+    if (!removeCateory)
     {
-        categories.Remove(removeCateory);
-        return Ok(ApiResponses<Object>.SuccessResponse(null,204,"category Deleted successfully"));;
+        return NotFound(ApiResponses<object>.ErrorResponse(new List<string>{"No Matched Id dound to Delete"},404,"Deletation Failed"));
     }
-    return NotFound("Category not found");
+    return Ok(ApiResponses<object>.SuccessResponse(null,204,"Category Deleted Successfully"));
     }
 
     [HttpPost]
     public IActionResult InsertCategory([FromBody] CreateCategoryDtos category)
     {
-       
-    var newcat = new Category
-    {
-        CategoryId = Guid.NewGuid(),
-        CategoryName = category.CategoryName,
-        Description = category.Description,
-        CreatedAt = DateTime.UtcNow
-    };
-    categories.Add(newcat);
-    var newReadCategoryDtos  = new ReadCategoryDtos
-    {
-        CategoryId = newcat.CategoryId,
-        CategoryName = newcat.CategoryName,
-        Description = newcat.Description,
-        CreatedAt = newcat.CreatedAt,
-    };
+       var newReadCategoryDtos  = _categoryServices.CreateCategory(category);
     
-    return Created($"/api/categories/{newcat.CategoryId}",
+    return Created(nameof(GetCategoryById),
     ApiResponses<ReadCategoryDtos>.SuccessResponse(newReadCategoryDtos,201,"category created successfully"));
     }
 
