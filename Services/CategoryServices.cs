@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 public class CategoryServices : ICategoryServices
 {
@@ -14,7 +15,7 @@ public class CategoryServices : ICategoryServices
     }
 
     // Get all categories
-    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize,string? search = null)
+    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize,string? search = null,string? sortOrder = null)
     {
         IQueryable <Category> query = _appDbContext.categories;
         /*
@@ -23,13 +24,44 @@ public class CategoryServices : ICategoryServices
             query = query.Where(c=>c.CategoryName.ToLower().Contains(search) || c.Description.ToLower().Contains(search));
         }
         */
+        //searching
         if (!string.IsNullOrWhiteSpace(search))
-{
+    {
     query = query.Where(c =>
         EF.Functions.Like(c.CategoryName, $"%{search}%") ||
         EF.Functions.Like(c.Description, $"%{search}%")
     );
+     }
+
+     //sorting
+     if (string.IsNullOrWhiteSpace(sortOrder))
+{
+    query = query.OrderBy(c => c.CategoryName);
 }
+else
+{
+    var formattedQuery = sortOrder.Trim().ToLower();
+
+    if (Enum.TryParse<SortOrder>(formattedQuery, true, out var parsedSortOrder))
+    {
+        query = parsedSortOrder switch
+        {
+            SortOrder.nameasc        => query.OrderBy(c => c.CategoryName),
+            SortOrder.namedesc       => query.OrderByDescending(c => c.CategoryName),
+            SortOrder.createdatasc   => query.OrderBy(c => c.CreatedAt),
+            SortOrder.createdatdesc  => query.OrderByDescending(c => c.CreatedAt),
+
+            _ => query.OrderBy(c => c.CategoryName)
+        };
+    }
+    else
+    {
+        // invalid sortOrder value → default sorting
+        query = query.OrderBy(c => c.CategoryName);
+    }
+}
+
+       
         var totalCount = await query.CountAsync();
         var items = await query.Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync();
         var results =  _mapper.Map<List<ReadCategoryDtos>>(items);
@@ -41,6 +73,9 @@ public class CategoryServices : ICategoryServices
             pageSize = pageSize
             
         };
+
+        
+        
     }
 
     // Create new category
