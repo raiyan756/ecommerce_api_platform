@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Mvc;
+
 public interface ICategoryServices
 {
-     Task< Pagination<ReadCategoryDtos>> GetAllCategories(int pageNumber ,int pageSize,string? search = null,string? sortOrder = null);
+     Task<Pagination<ReadCategoryDtos>> GetAllCategories(QueryParameter  queryParameter);
      Task<ReadCategoryDtos> CreateCategory (CreateCategoryDtos createCategoryDtos);
      Task<ReadCategoryDtos?>  GetCategoryById (Guid categoryId);
 

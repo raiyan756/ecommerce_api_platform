@@ -15,7 +15,7 @@ public class CategoryServices : ICategoryServices
     }
 
     // Get all categories
-    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize,string? search = null,string? sortOrder = null)
+    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( QueryParameter queryParameter)
     {
         IQueryable <Category> query = _appDbContext.categories;
         /*
@@ -25,22 +25,22 @@ public class CategoryServices : ICategoryServices
         }
         */
         //searching
-        if (!string.IsNullOrWhiteSpace(search))
+        if (!string.IsNullOrWhiteSpace(queryParameter.search))
     {
     query = query.Where(c =>
-        EF.Functions.Like(c.CategoryName, $"%{search}%") ||
-        EF.Functions.Like(c.Description, $"%{search}%")
+        EF.Functions.Like(c.CategoryName, $"%{queryParameter.search}%") ||
+        EF.Functions.Like(c.Description, $"%{queryParameter.search}%")
     );
      }
 
      //sorting
-     if (string.IsNullOrWhiteSpace(sortOrder))
+     if (string.IsNullOrWhiteSpace(queryParameter.sortOrder))
 {
     query = query.OrderBy(c => c.CategoryName);
 }
 else
 {
-    var formattedQuery = sortOrder.Trim().ToLower();
+    var formattedQuery =queryParameter. sortOrder.Trim().ToLower();
 
     if (Enum.TryParse<SortOrder>(formattedQuery, true, out var parsedSortOrder))
     {
@@ -63,14 +63,14 @@ else
 
        
         var totalCount = await query.CountAsync();
-        var items = await query.Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync();
+        var items = await query.Skip((queryParameter.pageNumber-1)*queryParameter.pageSize).Take(queryParameter.pageSize).ToListAsync();
         var results =  _mapper.Map<List<ReadCategoryDtos>>(items);
         return new Pagination<ReadCategoryDtos>
         {
             Items = results,
             totalCount = totalCount,
-            pageNumber = pageNumber,
-            pageSize = pageSize
+            pageNumber = queryParameter.pageNumber,
+            pageSize = queryParameter.pageSize
             
         };
 
