@@ -14,9 +14,22 @@ public class CategoryServices : ICategoryServices
     }
 
     // Get all categories
-    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize)
+    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize,string? search = null)
     {
         IQueryable <Category> query = _appDbContext.categories;
+        /*
+        if (!string.IsNullOrWhiteSpace(search.ToLower()))
+        {
+            query = query.Where(c=>c.CategoryName.ToLower().Contains(search) || c.Description.ToLower().Contains(search));
+        }
+        */
+        if (!string.IsNullOrWhiteSpace(search))
+{
+    query = query.Where(c =>
+        EF.Functions.Like(c.CategoryName, $"%{search}%") ||
+        EF.Functions.Like(c.Description, $"%{search}%")
+    );
+}
         var totalCount = await query.CountAsync();
         var items = await query.Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync();
         var results =  _mapper.Map<List<ReadCategoryDtos>>(items);
