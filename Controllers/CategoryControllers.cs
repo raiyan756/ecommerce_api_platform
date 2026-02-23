@@ -18,7 +18,7 @@ public class CategoryControllers:ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult>  GetCategories()
+    public async Task<IActionResult>  GetCategories([FromQuery] int pageNumber = 1 , [FromQuery] int pageSize =6)
     {
         /*
         if(!string.IsNullOrEmpty(searchValue)){
@@ -26,8 +26,8 @@ public class CategoryControllers:ControllerBase
        return Ok(filteredCategories);
     }
     */
-       var newCategories = await _categoryServices.GetAllCategories();
-       return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
+       var newCategories = await _categoryServices.GetAllCategories(pageNumber,pageSize);
+       return Ok (ApiResponses<Pagination<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
     }
     //get category by id
     [HttpGet("{categoryId:guid}")]

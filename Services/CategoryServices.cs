@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 public class CategoryServices : ICategoryServices
@@ -13,10 +14,20 @@ public class CategoryServices : ICategoryServices
     }
 
     // Get all categories
-    public async Task<List<ReadCategoryDtos>> GetAllCategories()
+    public async Task<Pagination<ReadCategoryDtos>> GetAllCategories( int pageNumber,int pageSize)
     {
-        var categories = await _appDbContext.categories.ToListAsync();
-        return _mapper.Map<List<ReadCategoryDtos>>(categories);
+        IQueryable <Category> query = _appDbContext.categories;
+        var totalCount = await query.CountAsync();
+        var items = await query.Skip((pageNumber-1)*pageSize).Take(pageSize).ToListAsync();
+        var results =  _mapper.Map<List<ReadCategoryDtos>>(items);
+        return new Pagination<ReadCategoryDtos>
+        {
+            Items = results,
+            totalCount = totalCount,
+            pageNumber = pageNumber,
+            pageSize = pageSize
+            
+        };
     }
 
     // Create new category
