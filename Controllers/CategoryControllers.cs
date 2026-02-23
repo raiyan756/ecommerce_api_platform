@@ -18,7 +18,7 @@ public class CategoryControllers:ControllerBase
     }
     
     [HttpGet]
-    public IActionResult GetCategories()
+    public async Task<IActionResult>  GetCategories()
     {
         /*
         if(!string.IsNullOrEmpty(searchValue)){
@@ -26,14 +26,14 @@ public class CategoryControllers:ControllerBase
        return Ok(filteredCategories);
     }
     */
-       var newCategories = _categoryServices.GetAllCategories();
+       var newCategories = await _categoryServices.GetAllCategories();
        return Ok (ApiResponses<List<ReadCategoryDtos>>.SuccessResponse(newCategories,200,"category created successfully"));
     }
     //get category by id
     [HttpGet("{categoryId:guid}")]
-    public IActionResult GetCategoryById(Guid categoryId)
+    public async Task<IActionResult> GetCategoryById(Guid categoryId)
     {
-      var foundCategory = _categoryServices.GetCategoryById(categoryId);
+      var foundCategory = await _categoryServices.GetCategoryById(categoryId);
 
         if (foundCategory == null)
         {
@@ -44,9 +44,9 @@ public class CategoryControllers:ControllerBase
     }
 
     [HttpPut("{categoryId:guid}")]
-    public IActionResult UpdateCategories(Guid categoryId,[FromBody] UpdateCategoryDtos updatedCategory)
+    public async Task<IActionResult>  UpdateCategories(Guid categoryId,[FromBody] UpdateCategoryDtos updatedCategory)
     {
-        var foundCategory =_categoryServices.UpdateCategoryById(categoryId,updatedCategory);
+        var foundCategory =await _categoryServices.UpdateCategoryById(categoryId,updatedCategory);
 
         if (foundCategory == null)
         {
@@ -61,9 +61,9 @@ public class CategoryControllers:ControllerBase
     }
 
     [HttpDelete("{categoryId:guid}")]
-    public IActionResult DeleteCategories(Guid categoryId)
+    public async Task<IActionResult> DeleteCategories(Guid categoryId)
     {
-       var removeCateory = _categoryServices.DeleteCategory(categoryId);
+       var removeCateory =await _categoryServices.DeleteCategory(categoryId);
    
     if (!removeCateory)
     {
@@ -73,9 +73,9 @@ public class CategoryControllers:ControllerBase
     }
 
     [HttpPost]
-    public IActionResult InsertCategory([FromBody] CreateCategoryDtos category)
+    public async Task<IActionResult> InsertCategory([FromBody] CreateCategoryDtos category)
     {
-       var newReadCategoryDtos  = _categoryServices.CreateCategory(category);
+       var newReadCategoryDtos  =await _categoryServices.CreateCategory(category);
     
     return Created(nameof(GetCategoryById),
     ApiResponses<ReadCategoryDtos>.SuccessResponse(newReadCategoryDtos,201,"category created successfully"));
